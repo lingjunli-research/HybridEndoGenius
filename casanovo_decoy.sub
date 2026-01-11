@@ -1,0 +1,20 @@
+universe        = vanilla
+executable      = casanovo.sh
+
+arguments       = $(mgf_file)
+
+# List all required input files for the job
+transfer_input_files = casanovo.sh, casanovo.yaml, casanovo_v4_2_0.ckpt, $(mgf_file)
+
+# Output and error logs for monitoring
+output          = logs/casanovo_d_$(Cluster)_$(Process).out
+error           = logs/casanovo_d_$(Cluster)_$(Process).err
+log             = logs/casanovo_d_$(Cluster).log
+
+# Resource requests
+request_cpus    = 6
+request_memory  = 32GB
+request_disk    = 40GB
+
+# Submit one job
+queue

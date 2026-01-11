@@ -1,0 +1,19 @@
+universe = vanilla
+executable = endogenius.sh
+
+# All files needed by the JSON file
+transfer_input_files = endogenius.sif, endogenius.sh, $(mzml_file), $(ms2_file), $(filtered_fasta), 20220831_neuropep+swepep+neuropedia+neuropred_rat_Huong_validated_320entries.fasta,updated_combined_motif_DB.csv, $(json_config)
+
+arguments = $(json_config)
+
+output = logs/EG_R2_$(Cluster)_$(Process).out
+error  = logs/EG_R2_$(Cluster)_$(Process).err
+log    = logs/EG_R2_$(Cluster)_$(Process).log
+
+request_cpus = 4
+request_memory = 16GB
+request_disk = 10GB
+
+transfer_output_files = .
+
+queue
