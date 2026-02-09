@@ -17,6 +17,7 @@ import pandas as pd
 import csv
 import webbrowser
 import os
+import sys
 import subprocess
 from typing import Callable, Iterable, Tuple, Dict, List, Optional
 from utils import *
@@ -300,15 +301,16 @@ casanovo_model = StringVar()
 casanovo_yaml = StringVar()
 run_casanovo_var = tk.BooleanVar(value=False)
 casanovo_db = StringVar()
+CASANOVO_EXE = StringVar()
 
 # ------------- User defaults -------------
-input_path_MS2.set("/Users/jenifer/Undergrad/Research/crab_database_EG/Fed_Brain_TR1.ms2")
+input_path_MS2.set(r"C:\Users\SVC-LiLab-SOP\Casanovo\Fed_Brain_TR2.ms2")
 # input_path_format_MS2.set(r"D:\Manuscripts\2025_SodiumAdducts\EG_analysis\baseline_analysis_noAdducts_noLoss_v02\EGsearch_baseline_v02\30sal_PO_TR1\round2\30sal_PO_TR1_formatted.txt")
 #fasta_path.set(r"D:\Manuscripts\2025_SodiumAdducts\EG_analysis\missing_values_test\missing_values_DB_v03.fasta")
-motif_db_path.set("/Users/jenifer/Undergrad/Research/crab_database_EG/motif_db_20230621.csv")
-output_dir_path.set("/Users/jenifer/Undergrad/Research/crab_database_EG/test_hybrid")
-database_csv_path.set("/Users/jenifer/Undergrad/Research/Shuffle_database.csv")
-target_peptide_list_path.set("/Users/jenifer/Undergrad/Research/target_list.csv")
+motif_db_path.set(r"C:\Users\SVC-LiLab-SOP\Downloads\motif_db_20230621.csv")
+output_dir_path.set(r"C:\Users\SVC-LiLab-SOP\Casanovo\HybridEndoGenius_test")
+database_csv_path.set(r"C:\Users\SVC-LiLab-SOP\Casanovo\Shuffle_database.csv")
+target_peptide_list_path.set(r"C:\Users\SVC-LiLab-SOP\Casanovo\target_list.csv")
 #FDR_threshold.set('0.05')
 
 mz_range_min.set('50')
@@ -322,10 +324,11 @@ max_mods_pep.set('3')
 confident_coverage_threshold.set('50')
 eg_threshold.set('1000')
 casanovo_fdr.set("0.05")
-casanovo_input_mgf.set("/Users/jenifer/Undergrad/Research/crab_database_EG/Fed_Brain_TR1.mgf")
-casanovo_yaml.set("/Users/jenifer/Downloads/casanovo.yaml")
-casanovo_model.set("/Users/jenifer/Downloads/casanovo_v4_2_0.ckpt")
-casanovo_db.set("/Users/jenifer/Downloads/short_fasta.fasta")
+casanovo_input_mgf.set(r"C:\Users\SVC-LiLab-SOP\Casanovo\Fed_Brain_TR2.mgf")
+casanovo_yaml.set(r"C:\Users\SVC-LiLab-SOP\casanovo.yaml")
+casanovo_model.set(r"C:\Users\SVC-LiLab-SOP\Downloads\casanovo_v4_2_0.ckpt")
+casanovo_db.set(r"C:\Users\SVC-LiLab-SOP\Downloads\duplicate_removed_crustacean_database_validated_formatted20220725 1.fasta")
+CASANOVO_EXE.set(r"C:\Users\SVC-LiLab-SOP\AppData\Local\anaconda3\envs\casanovo_env02\Scripts\casanovo.exe")
 
 # ----------------------------
 # Modification selector UI
@@ -891,6 +894,9 @@ def casanovo_model_get():
 def casanovo_db_get():
     casanovo_db.set(pick_file("Select the database FASTA", ("FASTA Files", ("*.fasta"))))
 
+def CASANOVO_EXE_get():
+    CASANOVO_EXE.set(pick_file("Select the CASANOVO exe", ("EXE Files", ("*.exe"))))
+
 # ----------------------------
 # Make Target List 
 # ----------------------------
@@ -1247,9 +1253,15 @@ def begin_search():
 # ----------------------------
 # casanovo & fasta generation
 # ----------------------------
-def run_casanovo(input_mgf, output_mztab, casanovo_yaml, casanovo_model):
+def run_casanovo(casanovo_exe, input_mgf, output_mztab, casanovo_yaml, casanovo_model):
+    print("Python:", sys.executable)
+    print("casanovo:", casanovo_exe)
+    print("MGF exists:", os.path.exists(input_mgf))
+    print("Config exists:", os.path.exists(casanovo_yaml))
+    print("Model exists:", os.path.exists(casanovo_model))
+    print("Output dir exists:", os.path.exists(os.path.dirname(output_mztab)))
     cmd = [
-        "casanovo", "sequence",
+        casanovo_exe, "sequence",
         "-o", output_mztab,
         "-c", casanovo_yaml,
         "-m", casanovo_model,
@@ -1284,14 +1296,15 @@ def run_casanovo_pipeline():
         yaml_path = casanovo_yaml.get()
         output_mztab_target = os.path.join(output_dir_path.get(),"casanovo_result_target.mztab")
         output_mztab_decoy = os.path.join(output_dir_path.get(),"casanovo_result_decoy.mztab")
+        casanovo_exe = CASANOVO_EXE.get()
         # Step 1: Run Casanovo
-        output_mztab = run_casanovo(mgf_file, output_mztab_target, yaml_path, model_path)
+        output_mztab = run_casanovo(casanovo_exe, mgf_file, output_mztab_target, yaml_path, model_path)
 
         # Step 2: Generate Decoy
         decoy_mgf = run_decoy(mgf_file)
         
         # Step 3: Run Decoy Casanovo
-        decoy_file = run_casanovo(decoy_mgf, output_mztab_decoy, yaml_path, model_path)
+        decoy_file = run_casanovo(casanovo_exe, decoy_mgf, output_mztab_decoy, yaml_path, model_path)
 
         # Step 4: Run Analysis
         run_analysis(output_mztab, decoy_file, db_file, fdr = fdr_score)
@@ -1354,14 +1367,14 @@ canvas.create_rectangle(10.0, 613.0, 770.0, 715.0, fill="#D9D9D9", outline="")
 canvas.create_text(14.0, 626.0, anchor="nw", text="Motif database", fill="#000000", font=("Inter", 16 * -1))
 canvas.create_text(425.0, 626.0, anchor="nw", text="Confident coverage threshold (%)", fill="#000000", font=("Inter", 16 * -1))
 canvas.create_text(5.0, 720.0, anchor="nw", text="6. De novo sequencing (casanovo)", fill="#FFFFFF", font=("Inter", 24 * -1))
-canvas.create_text(5.0, 847.0, anchor="nw", text="7. Export results", fill="#FFFFFF", font=("Inter", 24 * -1))
-canvas.create_rectangle(10.0, 876.0, 411.0, 935.0, fill="#D9D9D9", outline="")
-canvas.create_text(29.0, 899.0, anchor="nw", text="Output directory", fill="#000000", font=("Inter", 16 * -1))
+canvas.create_text(5.0, 890.0, anchor="nw", text="7. Export results", fill="#FFFFFF", font=("Inter", 24 * -1))
+canvas.create_rectangle(10.0, 920.0, 411.0, 975.0, fill="#D9D9D9", outline="")
+canvas.create_text(29.0, 932.0, anchor="nw", text="Output directory", fill="#000000", font=("Inter", 16 * -1))
 canvas.create_text(5.0, 265.0, anchor="nw", text="3. Database definition", fill="#FFFFFF", font=("Inter", 24 * -1))
 canvas.create_rectangle(10.0, 315.0, 369.0, 436.0, fill="#D9D9D9", outline="")
-canvas.create_rectangle(10.0, 749.0, 770.0, 843.0, fill="#D9D9D9", outline="")
-canvas.create_text(20.0,768,anchor="nw",text="MGF file",fill="#000000",font=("Inter", 18 * -1))
-canvas.create_text(436.0,768,anchor="nw",text="FDR rate",fill="#000000",font=("Inter", 18 * -1))
+canvas.create_rectangle(10.0, 749.0, 770.0, 883.0, fill="#D9D9D9", outline="")
+canvas.create_text(20.0,768,anchor="nw",text="MGF file",fill="#000000",font=("Inter", 16 * -1))
+canvas.create_text(436.0,768,anchor="nw",text="FDR rate",fill="#000000",font=("Inter", 16 * -1))
 canvas.create_text(32.0, 334.0, anchor="nw", text="Database", fill="#000000", font=("Inter", 16 * -1))
 canvas.create_text(21.0, 388.0, anchor="nw", text="Target\npeptide list", fill="#000000", font=("Inter", 16 * -1), justify='center')
 canvas.create_text(338.0, 335.0, anchor="nw", text="or", fill="#FFFFFF", font=("Inter", 16 * -1))
@@ -1374,8 +1387,9 @@ canvas.create_text(25.0, 489.0, anchor="nw", text="Precursor error (ppm)", fill=
 canvas.create_text(14.0, 540.0, anchor="nw", text="Modifications", fill="#000000", font=("Inter", 16 * -1))
 canvas.create_text(280.0, 489.0, anchor="nw", text="Fragment error (Da)", fill="#000000", font=("Inter", 16 * -1))
 canvas.create_text(25.0, 805.0, anchor="nw", text="Model", fill="#000000", font=("Inter", 16 * -1))
-canvas.create_text(278.0, 805.0, anchor="nw", text="Yaml config", fill="#000000", font=("Inter", 16 * -1))
-canvas.create_text(548.0, 805.0, anchor="nw", text="Filter db", fill="#000000", font=("Inter", 16 * -1))
+canvas.create_text(436.0, 805.0, anchor="nw", text="Yaml config", fill="#000000", font=("Inter", 16 * -1))
+canvas.create_text(436.0, 842.0, anchor="nw", text="Filter db", fill="#000000", font=("Inter", 16 * -1))
+canvas.create_text(13.0, 842.0, anchor="nw", text="Casanovo exe", fill="#000000", font=("Inter", 16 * -1))
 
 
 button_modification = Button(PARENT, text='Select Modifications', borderwidth=0, highlightthickness=0, command=open_mod_select_window, relief="flat")
@@ -1384,11 +1398,11 @@ canvas.create_text(550.0, 489.0, anchor="nw", text="Max mods/peptide", fill="#00
 canvas.create_text(5.0, 436.0, anchor="nw", text="4. Database search", fill="#FFFFFF", font=("Inter", 24 * -1))
 button_image_1 = PhotoImage(file=relative_to_assets("button_1.png"))
 button_1 = Button(PARENT, image=button_image_1, borderwidth=0, highlightthickness=0, command=begin_search, relief="flat")
-button_1.place(x=9.0, y=944.0, width=401.0, height=59.0)
+button_1.place(x=9.0, y=987.0, width=401.0, height=59.0)
 image_image_0 = PhotoImage(file=relative_to_assets("EndoGenius_Logo_12.png"))
 image_0 = canvas.create_image(400.0, 60.0, image=image_image_0)
 image_image_1 = PhotoImage(file=relative_to_assets("image_1.png"))
-image_1 = canvas.create_image(617.0, 944.0, image=image_image_1)
+image_1 = canvas.create_image(617.0, 975.0, image=image_image_1)
 canvas.create_text(390.0, 668.0, anchor="nw", text="FDR\nThreshold", fill="#000000", font=("Inter", 16 * -1), justify='center')
 canvas.create_text(550.0, 668.0, anchor="nw", text="EndoGenius Score\nThreshold", fill="#000000", font=("Inter", 16 * -1), justify='center')
 button_image_2 = PhotoImage(file=relative_to_assets("button_2.png"))
@@ -1400,10 +1414,10 @@ button_image_3 = PhotoImage(file=relative_to_assets("button_3.png"))
 button_3 = Button(PARENT, image=button_image_3, borderwidth=0, highlightthickness=0, command=raw_MS2_path, relief="flat")
 button_3.place(x=282.0, y=123.0, width=77.21710205078125, height=30.0)
 entry_3 = Entry(PARENT, bd=0, bg="#FFFFFF", highlightthickness=0, textvariable=output_dir_path)
-entry_3.place(x=168.0, y=897.0, width=146.0, height=28.0)
+entry_3.place(x=168.0, y=930.0, width=146.0, height=28.0)
 button_image_4 = PhotoImage(file=relative_to_assets("button_4.png"))
 button_4 = Button(PARENT, image=button_image_4, borderwidth=0, highlightthickness=0, command=output_path_get, relief="flat")
-button_4.place(x=319.0, y=897.0, width=77.21710205078125, height=30.0)
+button_4.place(x=319.0, y=930.0, width=77.21710205078125, height=30.0)
 entry_4 = Entry(PARENT, bd=0, bg="#FFFFFF", highlightthickness=0, textvariable=fasta_path)
 entry_4.place(x=531.0, y=329.0, width=146.0, height=28.0)
 button_image_5 = PhotoImage(file=relative_to_assets("button_5.png"))
@@ -1426,14 +1440,17 @@ button_image_10 = PhotoImage(file=relative_to_assets("button_10.png"))
 button_10 = Button(PARENT, image=button_image_10, borderwidth=0, highlightthickness=0, command=casanovo_input_mgf_path_get, relief="flat")
 button_10.place(x=300.0, y=765.0, width=77.21710205078125, height=30.0)
 button_image_11 = PhotoImage(file=relative_to_assets("button_11.png"))
-button_11 = Button(PARENT, image=button_image_10, borderwidth=0, highlightthickness=0, command=casanovo_db_get, relief="flat")
-button_11.place(x=694.0, y=803.0, width=77.21710205078125, height=30.0)
+button_11 = Button(PARENT, image=button_image_11, borderwidth=0, highlightthickness=0, command=casanovo_db_get, relief="flat")
+button_11.place(x=694.0, y=840.0, width=77.21710205078125, height=30.0)
 button_image_12 = PhotoImage(file=relative_to_assets("button_12.png"))
-button_12 = Button(PARENT, image=button_image_10, borderwidth=0, highlightthickness=0, command=casanovo_yaml_get, relief="flat")
-button_12.place(x=453.0, y=803.0, width=77.21710205078125, height=30.0)
+button_12 = Button(PARENT, image=button_image_12, borderwidth=0, highlightthickness=0, command=casanovo_yaml_get, relief="flat")
+button_12.place(x=694.0, y=803.0, width=77.21710205078125, height=30.0)
 button_image_13 = PhotoImage(file=relative_to_assets("button_13.png"))
-button_13 = Button(PARENT, image=button_image_10, borderwidth=0, highlightthickness=0, command=casanovo_model_get, relief="flat")
-button_13.place(x=185.0, y=803.0, width=77.21710205078125, height=30.0)
+button_13 = Button(PARENT, image=button_image_13, borderwidth=0, highlightthickness=0, command=casanovo_model_get, relief="flat")
+button_13.place(x=300.0, y=803.0, width=77.21710205078125, height=30.0)
+button_image_14 = PhotoImage(file=relative_to_assets("button_14.png"))
+button_14 = Button(PARENT, image=button_image_14, borderwidth=0, highlightthickness=0, command=CASANOVO_EXE_get, relief="flat")
+button_14.place(x=315.0, y=840.0, width=77.21710205078125, height=30.0)
 entry_8 = Entry(PARENT, bd=0, bg="#FFFFFF", highlightthickness=0, textvariable=motif_db_path)
 entry_8.place(x=141.0, y=624.0, width=146.0, height=28.0)
 entry_10 = Entry(PARENT, bd=0, bg="#FFFFFF", highlightthickness=0, textvariable=max_fragment_z)
@@ -1468,11 +1485,13 @@ button_9.place(x=292.0, y=624.0, width=77.21710205078125, height=30.0)
 casanovo_checkbox = tk.Checkbutton(PARENT, text="Run Casanovo", variable=run_casanovo_var, font=("Arial", 10))
 casanovo_checkbox.place(x=650.0, y=765.0, width=110, height=30.0)
 entry_24 = Entry(PARENT, bd=0, bg="#FFFFFF", highlightthickness=0, textvariable=casanovo_db)
-entry_24.place(x=613.0, y=803.0, width=73.0, height=28.0)
+entry_24.place(x=510.0, y=840.0, width=167.0, height=28.0)
 entry_25 = Entry(PARENT, bd=0, bg="#FFFFFF", highlightthickness=0, textvariable=casanovo_yaml)
-entry_25.place(x=370.0, y=803.0, width=78.0, height=28.0)
+entry_25.place(x=530.0, y=803.0, width=150.0, height=28.0)
 entry_26 = Entry(PARENT, bd=0, bg="#FFFFFF", highlightthickness=0, textvariable=casanovo_model)
-entry_26.place(x=78.0, y=803.0, width=103.0, height=28.0)
+entry_26.place(x=78.0, y=803.0, width=208.0, height=28.0)
+entry_27 = Entry(PARENT, bd=0, bg="#FFFFFF", highlightthickness=0, textvariable=CASANOVO_EXE)
+entry_27.place(x=115.0, y=840.0, width=190.0, height=28.0)
 canvas.create_rectangle(138.0, 544.0, 156.0, 562.0, fill="#D9D9D9", outline="")
 canvas.create_rectangle(295.0, 544.0, 313.0, 562.0, fill="#D9D9D9", outline="")
 canvas.create_rectangle(417.0, 544.0, 435.0, 562.0, fill="#D9D9D9", outline="")
