@@ -1,10 +1,10 @@
 universe        = vanilla
 executable      = casanovo.sh
 
-arguments       = $(mgf_file)
+arguments       = $(mgf_file) $(yaml_file) $(ckpt_file)
 
 # List all required input files for the job
-transfer_input_files = casanovo.sh, casanovo.yaml, casanovo_v4_2_0.ckpt, $(mgf_file)
+transfer_input_files = casanovo.sh, $(yaml_file), $(ckpt_file), $(mgf_file)
 
 # Output and error logs for monitoring
 output          = logs/casanovo_t_$(Cluster)_$(Process).out
