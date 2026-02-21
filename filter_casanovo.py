@@ -107,15 +107,11 @@ def database_compare(filtered_csv, database_fasta, output_csv):
     df = pd.DataFrame(results, columns=["DeNovo_Peptide", "Matched_Database_Seq", "Similarity_Score"])
     df.to_csv(output_csv, index=False)
 
-def match_update(db_csv1, db_csv2,db_csv3,target_csv,output_dir):
+def match_update(db_csv,target_csv,output_dir):
     fasta_output = os.path.join(output_dir, "novel_peptides.fasta")
     dfs = []
-    if db_csv1: dfs.append(pd.read_csv(db_csv1))
-    if db_csv2: dfs.append(pd.read_csv(db_csv2))
-    if db_csv3: dfs.append(pd.read_csv(db_csv3))
-    # df_match = pd.concat([df1,df2,df3],ignore_index=True)
-    if dfs:
-        all_db = pd.concat(dfs, ignore_index=True)
+    if db_csv:
+        all_db = pd.read_csv(db_csv)
     else:
         all_db = pd.DataFrame()
     df_filter = pd.read_csv(target_csv)
@@ -130,24 +126,13 @@ def match_update(db_csv1, db_csv2,db_csv3,target_csv,output_dir):
             f.write(f">ID_{idx}\n{row['sequence_new']}\n")
     return fasta_output
 
-def automated_data_analysis(target_casanovo_result, decoy_casanovo_result, engine_score_column, required_fdr, output_dir, db1, db2, db3):
+def automated_data_analysis(target_casanovo_result, decoy_casanovo_result, engine_score_column, required_fdr, output_dir, db):
     # file name organize
     target_base, _ = os.path.splitext(target_casanovo_result)
     decoy_base, _ = os.path.splitext(decoy_casanovo_result)
-    # database1_base, _ = os.path.splitext(db1)
-    # database2_base, _ = os.path.splitext(db2)
-    # database3_base, _ = os.path.splitext(db3)
     target_csv_path = target_base + ".csv"
     decoy_csv_path = decoy_base + ".csv"
     filtered_target_path = target_base + "_filtered.csv"
-    # directory_target, filename_1 = os.path.split(target_base)
-    # directory_db1, filename_2_1 = os.path.split(database1_base)
-    # directory_db2, filename_2_2 = os.path.split(database2_base)
-    # directory_db3, filename_2_3 = os.path.split(database3_base)
-    # db1_path = os.path.join(directory_target, filename_1+filename_2_1+".csv")
-    # db2_path = os.path.join(directory_target, filename_1+filename_2_2+".csv")
-    # db3_path = os.path.join(directory_target, filename_1+filename_2_3+".csv")
-    # extract casanovo result to csv file for later data analysis
     extract_psm_to_csv(target_casanovo_result, target_csv_path)
     extract_psm_to_csv(decoy_casanovo_result, decoy_csv_path)
     # decoy FDR calculation
@@ -159,46 +144,8 @@ def automated_data_analysis(target_casanovo_result, decoy_casanovo_result, engin
     # filter casanovo results with fdr cutoff
     casanovo_filter(target_csv_path, filtered_target_path, score_list[0])
     # compare with database
-    output_csv_1 = os.path.join(output_dir, "similarity_check_1.csv")
-    output_csv_2 = os.path.join(output_dir, "similarity_check_2.csv")
-    output_csv_3 = os.path.join(output_dir, "similarity_check_3.csv")
-    database_compare(filtered_target_path, db1, output_csv_1)
-    database_compare(filtered_target_path, db2, output_csv_2)
-    database_compare(filtered_target_path, db3, output_csv_3)
+    output_csv = os.path.join(output_dir, "similarity_check.csv")
+    database_compare(filtered_target_path, db, output_csv)
+    # database_compare(filtered_target_path, db3, db3_path)
     # filter again to get only novel neuropeptides
-    match_update(
-        output_csv_1,
-        output_csv_2,
-        output_csv_3,
-        filtered_target_path,
-        output_dir
-    )
-
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--target", required=True)
-    parser.add_argument("--decoy", required=True)
-    parser.add_argument("--score_col", required=True)
-    parser.add_argument("--fdr", type=float, required=True)
-    parser.add_argument("--outdir", required=True)
-    parser.add_argument("--db1", required=True)
-    parser.add_argument("--db2", required=True)
-    parser.add_argument("--db3", required=True)
-
-    args = parser.parse_args()
-
-    os.makedirs(args.outdir, exist_ok=True)
-
-    automated_data_analysis(
-        target_casanovo_result=args.target,
-        decoy_casanovo_result=args.decoy,
-        engine_score_column=args.score_col,
-        required_fdr=args.fdr,
-        output_dir=args.outdir,
-        db1=args.db1,
-        db2=args.db2,
-        db3=args.db3
-    )
-
+    match_update(output_csv,filtered_target_path,output_dir)
