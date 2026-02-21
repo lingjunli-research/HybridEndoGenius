@@ -2,7 +2,7 @@ universe = vanilla
 executable = endogenius.sh
 
 # All files needed by the JSON file
-transfer_input_files = endogenius.sif, endogenius.sh, $(mzml_file), $(ms2_file), $(filtered_fasta), 20220831_neuropep+swepep+neuropedia+neuropred_rat_Huong_validated_320entries.fasta,updated_combined_motif_DB.csv, $(json_config)
+transfer_input_files = endogenius.sif, endogenius.sh, $(mzml_file), $(ms2_file), $(filtered_fasta), $(motif_db), $(json_config)
 
 arguments = $(json_config)
 
