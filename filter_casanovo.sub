@@ -7,11 +7,9 @@ transfer_input_files = \
     filter_casanovo.py, \
     $(target_mztab), \
     $(decoy_mztab), \
-    motif_DB.fasta, \
-    new_NPs_since_2010.fasta, \
-    np_database.fasta
+    $(database)
 
-arguments = $(target_mztab) $(decoy_mztab)
+arguments = $(target_mztab) $(decoy_mztab) $(fdr) $(database)
 
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
