@@ -1,7 +1,7 @@
 {
   "continue_on_error": false,
   "defaults": {
-    "motif_db": "updated_combined_motif_DB.csv",
+    "motif_db": "motif.csv",
     "out_dir": "sample_round1",
     "mz_min": "50",
     "mz_max": "3000",
@@ -62,7 +62,7 @@
     {
       "name": "sample_round1",
       "raw_ms2": "sample.ms2",
-      "fasta": "20220831_neuropep+swepep+neuropedia+neuropred_rat_Huong_validated_320entries.fasta",
+      "fasta": "EG_database.fasta",
       "eg": 1000
     }
   ]

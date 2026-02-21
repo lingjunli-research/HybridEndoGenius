@@ -11,18 +11,18 @@ help_message() {
     echo "Options:"
     echo "  -s    (required) Sample basename: Base name of your sample files (without extension). Example: sample"
     echo "                   The script will automatically look for sample.ms2, sample.mgf, and sample.mzML"
-    echo "  -j    (required) Round1 JSON: Configuration file for EndoGenius round 1. Example: round1.json"
-    echo "  -k    (required) Round2 JSON: Configuration file for EndoGenius round 2. Example: round2.json"
+    echo "  -j    (required) Round1 JSON: Configuration file for EndoGenius round 1. Example: sample_round1.json"
+    echo "  -k    (required) Round2 JSON: Configuration file for EndoGenius round 2. Example: sample_round2.json"
     echo "  -a    (required) EndoGenius FASTA database. Example: EG_database.fasta"
     echo "  -m    (required) EndoGenius Motif database (.csv). Example: motif.csv"
     echo "  -f    (required) FDR threshold. Example: 0.05"
     echo "  -d    (required) Database FASTA file for Casanovo result similarity comparison. Example: filter.fasta"
-    echo "  -o    (required) DAG output file name: Desired name for DAG file. Example: ms_pipeline"
+    echo "  -o    (required) DAG output file name: Desired name for DAG file. Example: sample_pipeline"
     echo
     echo "Note: Please convert your MS2 file to MGF and mzML formats using msconvert before running this pipeline."
     echo "      The script expects all three files (sample.ms2, sample.mgf, sample.mzML) to exist."
     echo
-    echo "Example usage: bash make_dag.sh -s sample -j round1.json -k round2.json -f 0.05 -d filter.fasta -o ms_pipeline"
+    echo "Example usage: bash make_dag.sh -s sample -j sample_round1.json -k sample_round2.json -a EG_database.fasta -m motif.csv -f 0.05 -d filter.fasta -o sample_pipeline"
     exit 1
 }
 
@@ -99,7 +99,7 @@ echo "JOB ANALYZE_FDR filter_casanovo.sub" >> "$FILENAME.dag"
 echo "VARS ANALYZE_FDR target_mztab=\"$TARGET_MZTAB\" decoy_mztab=\"$DECOY_MZTAB\" fdr=\"$FDR_VALUE\" database=\"$DATABASE_FASTA\"" >> "$FILENAME.dag"
 
 echo "JOB ENDOGENIUS_R2 endogenius_round2.sub" >> "$FILENAME.dag"
-echo "VARS ENDOGENIUS_R2 json_config=\"$ROUND2_JSON\" mzml_file=\"$MZML_FILE\" ms2_file=\"$MS2_FILE\" filtered_fasta=\"$FILTERED_FASTA\" motif_db=\"$MOTIF_DB\"" >> "$FILENAME.dag"
+echo "VARS ENDOGENIUS_R2 json_config=\"$ROUND2_JSON\" mzml_file=\"$MZML_FILE\" ms2_file=\"$MS2_FILE\" filtered_fasta=\"$FILTERED_FASTA\" motif_db=\"$MOTIF_CSV\"" >> "$FILENAME.dag"
 
 # Write dependencies (msconvert removed)
 echo "PARENT ENDOGENIUS_R1 CHILD CASANOVO_TARGET" >> "$FILENAME.dag"
