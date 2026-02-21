@@ -39,7 +39,6 @@ FILENAME=""
 # Fixed parameters (hardcoded)
 CASANOVO_YAML="casanovo.yaml"
 CASANOVO_CKPT="casanovo_v4_2_0.ckpt"
-FILTER_SIF="filter_casanovo.sif"
 
 # Parse flags
 while getopts "s:j:k:a:m:f:d:o:h" flag; do
@@ -96,8 +95,8 @@ echo "VARS CASANOVO_TARGET mgf_file=\"$MGF_FILE\" yaml_file=\"$CASANOVO_YAML\" c
 echo "JOB CASANOVO_DECOY casanovo_decoy.sub" >> "$FILENAME.dag"
 echo "VARS CASANOVO_DECOY mgf_file=\"$DECOY_MGF\" yaml_file=\"$CASANOVO_YAML\" ckpt_file=\"$CASANOVO_CKPT\"" >> "$FILENAME.dag"
 
-echo "JOB ANALYZE_FDR analyze_fdr.sub" >> "$FILENAME.dag"
-echo "VARS ANALYZE_FDR target_mztab=\"$TARGET_MZTAB\" decoy_mztab=\"$DECOY_MZTAB\" fdr=\"$FDR_VALUE\" database=\"$DATABASE_FASTA\" filter_sif=\"$FILTER_SIF\"" >> "$FILENAME.dag"
+echo "JOB ANALYZE_FDR filter_casanovo.sub" >> "$FILENAME.dag"
+echo "VARS ANALYZE_FDR target_mztab=\"$TARGET_MZTAB\" decoy_mztab=\"$DECOY_MZTAB\" fdr=\"$FDR_VALUE\" database=\"$DATABASE_FASTA\"" >> "$FILENAME.dag"
 
 echo "JOB ENDOGENIUS_R2 endogenius_round2.sub" >> "$FILENAME.dag"
 echo "VARS ENDOGENIUS_R2 json_config=\"$ROUND2_JSON\" mzml_file=\"$MZML_FILE\" ms2_file=\"$MS2_FILE\" filtered_fasta=\"$FILTERED_FASTA\" motif_db=\"$MOTIF_DB\"" >> "$FILENAME.dag"
