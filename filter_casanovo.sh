@@ -1,19 +1,24 @@
 #!/bin/bash
 set -euo pipefail
 
+echo "PWD:"
+pwd
+
 echo "Running filter_casanovo.py"
 
-TARGET_MZTAB="$1"
-DECOY_MZTAB="$2"
-FDR_VALUE="$3"
-DATABASE="$4"
+TARGET="$(basename "$1")"
+DECOY="$(basename "$2")"
+FDR="$3"
+DATABASE="$(basename "$4")"
 
-python filter_casanovo.py \
-  --target "${TARGET_MZTAB}" \
-  --decoy "${DECOY_MZTAB}" \
+mkdir -p "$PWD/filter"
+
+python /app/filter_casanovo.py \
+  --target "${TARGET}" \
+  --decoy "${DECOY}" \
   --score_col "search_engine_score[1]" \
-  --fdr "${FDR_VALUE}" \
-  --outdir results \
+  --fdr "${FDR}" \
+  --outdir "$PWD/filter" \
   --db "${DATABASE}"
 
 echo "Finished filter_casanovo.py"

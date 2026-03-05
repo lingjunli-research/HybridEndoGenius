@@ -1,16 +1,19 @@
 universe        = vanilla
 executable      = generate_decoy.sh
 
+arguments = $(mgf_file) $(sample)
+
 transfer_input_files = generate_decoy.sh, generate_decoy.py, $(mgf_file)
 
-arguments = $(mgf_file)
-
-output          = logs/decoy_$(Cluster)_$(Process).out
-error           = logs/decoy_$(Cluster)_$(Process).err
-log             = logs/decoy_$(Cluster).log
+output          = $(out_dir)/logs/decoy_$(Cluster)_$(Process).out
+error           = $(out_dir)/logs/decoy_$(Cluster)_$(Process).err
+log             = $(out_dir)/logs/decoy_$(Cluster).log
 
 request_cpus    = 2
 request_memory  = 8GB
 request_disk    = 8GB
+
+transfer_output_files = $(sample)_decoy.mgf
+transfer_output_remaps = "$(sample)_decoy.mgf = $(out_dir)/Casanovo/$(sample)_decoy.mgf"
 
 queue

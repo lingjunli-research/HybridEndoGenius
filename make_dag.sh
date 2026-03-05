@@ -37,20 +37,20 @@ DATABASE_FASTA=""
 FILENAME=""
 
 # Fixed parameters (hardcoded)
-CASANOVO_YAML="casanovo.yaml"
-CASANOVO_CKPT="casanovo_v4_2_0.ckpt"
+CASANOVO_YAML="input_files/casanovo.yaml"
+CASANOVO_CKPT="input_files/casanovo_v4_2_0.ckpt"
 
 # Parse flags
 while getopts "s:j:k:a:m:f:d:o:h" flag; do
     case "${flag}" in
-        s) SAMPLE_BASE=${OPTARG} ;;
-        j) ROUND1_JSON=${OPTARG} ;;
-        k) ROUND2_JSON=${OPTARG} ;;
-	a) ENDOGENIUS_FASTA=${OPTARG} ;;
-	m) MOTIF_CSV=${OPTARG} ;;
+        s) SAMPLE_BASE="${OPTARG}" ;;
+        j) ROUND1_JSON="input_files/${OPTARG}" ;;
+        k) ROUND2_JSON="input_files/${OPTARG}" ;;
+	a) ENDOGENIUS_FASTA="input_files/${OPTARG}" ;;
+	m) MOTIF_CSV="input_files/${OPTARG}" ;;
 	f) FDR_VALUE=${OPTARG} ;;
-	d) DATABASE_FASTA=${OPTARG} ;;
-        o) FILENAME=${OPTARG} ;;
+	d) DATABASE_FASTA="input_files/${OPTARG}" ;;
+        o) FILENAME="${OPTARG}" ;;
         h) help_message ;;
         *) help_message ;;
     esac
@@ -64,18 +64,22 @@ if [[ -z "$SAMPLE_BASE" || -z "$ROUND1_JSON" || -z "$ROUND2_JSON" || -z "$ENDOGE
 fi
 
 # Construct file names from sample basename
-MS2_FILE="${SAMPLE_BASE}.ms2"
-MGF_FILE="${SAMPLE_BASE}.mgf"
-MZML_FILE="${SAMPLE_BASE}.mzML"
+MS2_FILE="input_files/${SAMPLE_BASE}.ms2"
+MGF_FILE="input_files/${SAMPLE_BASE}.mgf"
+MZML_FILE="input_files/${SAMPLE_BASE}.mzML"
 
 # Derive output file names
-DECOY_MGF="${SAMPLE_BASE}_decoy.mgf"
-TARGET_MZTAB="${SAMPLE_BASE}.mztab"
-DECOY_MZTAB="${SAMPLE_BASE}_decoy.mztab"
-FILTERED_FASTA="results/novel_peptides.fasta"
+OUTPUT_ROOT="all_results/${SAMPLE_BASE}"
+DECOY_MGF="${OUTPUT_ROOT}/Casanovo/${SAMPLE_BASE}_decoy.mgf"
+TARGET_MZTAB="${OUTPUT_ROOT}/Casanovo/${SAMPLE_BASE}.mztab"
+DECOY_MZTAB="${OUTPUT_ROOT}/Casanovo/${SAMPLE_BASE}_decoy.mztab"
+FILTERED_FASTA="${OUTPUT_ROOT}/filter/novel_peptides.fasta"
 
 # Create logs directory if it doesn't exist
-mkdir -p logs
+mkdir -p "$OUTPUT_ROOT/logs"
+mkdir -p "$OUTPUT_ROOT/EndoGenius"
+mkdir -p "$OUTPUT_ROOT/Casanovo"
+mkdir -p "$OUTPUT_ROOT/filter"
 
 # Main script
 rm -f "$FILENAME.dag"
@@ -84,22 +88,22 @@ touch "$FILENAME.dag"
 
 # Write job definitions (msconvert removed - users convert manually)
 echo "JOB ENDOGENIUS_R1 endogenius_round1.sub" >> "$FILENAME.dag"
-echo "VARS ENDOGENIUS_R1 json_config=\"$ROUND1_JSON\" mzml_file=\"$MZML_FILE\" ms2_file=\"$MS2_FILE\" fasta_db=\"$ENDOGENIUS_FASTA\" motif_db=\"$MOTIF_CSV\"" >> "$FILENAME.dag"
+echo "VARS ENDOGENIUS_R1 json_config=\"$ROUND1_JSON\" mzml_file=\"$MZML_FILE\" ms2_file=\"$MS2_FILE\" fasta_db=\"$ENDOGENIUS_FASTA\" motif_db=\"$MOTIF_CSV\" out_dir=\"$OUTPUT_ROOT\"" >> "$FILENAME.dag"
 
 echo "JOB GENERATE_DECOY generate_decoy.sub" >> "$FILENAME.dag"
-echo "VARS GENERATE_DECOY mgf_file=\"$MGF_FILE\"" >> "$FILENAME.dag"
+echo "VARS GENERATE_DECOY mgf_file=\"$MGF_FILE\" sample=\"${SAMPLE_BASE}\" out_dir=\"$OUTPUT_ROOT\"" >> "$FILENAME.dag"
 
 echo "JOB CASANOVO_TARGET casanovo_target.sub" >> "$FILENAME.dag"
-echo "VARS CASANOVO_TARGET mgf_file=\"$MGF_FILE\" yaml_file=\"$CASANOVO_YAML\" ckpt_file=\"$CASANOVO_CKPT\"" >> "$FILENAME.dag"
+echo "VARS CASANOVO_TARGET mgf_file=\"$MGF_FILE\" yaml_file=\"$CASANOVO_YAML\" ckpt_file=\"$CASANOVO_CKPT\" out_dir=\"$OUTPUT_ROOT\" sample=\"${SAMPLE_BASE}\"" >> "$FILENAME.dag"
 
 echo "JOB CASANOVO_DECOY casanovo_decoy.sub" >> "$FILENAME.dag"
-echo "VARS CASANOVO_DECOY mgf_file=\"$DECOY_MGF\" yaml_file=\"$CASANOVO_YAML\" ckpt_file=\"$CASANOVO_CKPT\"" >> "$FILENAME.dag"
+echo "VARS CASANOVO_DECOY mgf_file=\"$DECOY_MGF\" yaml_file=\"$CASANOVO_YAML\" ckpt_file=\"$CASANOVO_CKPT\" out_dir=\"$OUTPUT_ROOT\" sample=\"${SAMPLE_BASE}\"" >> "$FILENAME.dag"
 
 echo "JOB ANALYZE_FDR filter_casanovo.sub" >> "$FILENAME.dag"
-echo "VARS ANALYZE_FDR target_mztab=\"$TARGET_MZTAB\" decoy_mztab=\"$DECOY_MZTAB\" fdr=\"$FDR_VALUE\" database=\"$DATABASE_FASTA\"" >> "$FILENAME.dag"
+echo "VARS ANALYZE_FDR target_mztab=\"$TARGET_MZTAB\" decoy_mztab=\"$DECOY_MZTAB\" fdr=\"$FDR_VALUE\" database=\"$DATABASE_FASTA\" out_dir=\"$OUTPUT_ROOT\" sample=\"${SAMPLE_BASE}\"" >> "$FILENAME.dag"
 
 echo "JOB ENDOGENIUS_R2 endogenius_round2.sub" >> "$FILENAME.dag"
-echo "VARS ENDOGENIUS_R2 json_config=\"$ROUND2_JSON\" mzml_file=\"$MZML_FILE\" ms2_file=\"$MS2_FILE\" filtered_fasta=\"$FILTERED_FASTA\" motif_db=\"$MOTIF_CSV\"" >> "$FILENAME.dag"
+echo "VARS ENDOGENIUS_R2 json_config=\"$ROUND2_JSON\" mzml_file=\"$MZML_FILE\" ms2_file=\"$MS2_FILE\" filtered_fasta=\"$FILTERED_FASTA\" motif_db=\"$MOTIF_CSV\" out_dir=\"$OUTPUT_ROOT\"" >> "$FILENAME.dag"
 
 # Write dependencies (msconvert removed)
 echo "PARENT ENDOGENIUS_R1 CHILD CASANOVO_TARGET" >> "$FILENAME.dag"

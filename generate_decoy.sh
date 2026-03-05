@@ -1,7 +1,8 @@
 #!/bin/bash
+set -e
 
-INPUT="$1"
-BASENAME=$(basename "$INPUT" .mgf)
-OUTPUT="${BASENAME}_decoy.mgf"
+INPUT="$(basename "$1")"
+SAMPLE="$2"
+OUTPUT="${SAMPLE}_decoy.mgf"
 
 python3 generate_decoy.py $INPUT $OUTPUT
