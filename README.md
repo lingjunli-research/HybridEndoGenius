@@ -2,14 +2,32 @@
 <img src="https://github.com/user-attachments/assets/9c44a28d-2e48-4959-904f-ca571fc44af3">
 </div>
 
-# EndoGenius
+# HybridEndoGenius
 
-EndoGenius is a program produced by the Lingjun Li Lab at the University of Wisconsin-Madison for identification of neuropeptides from mass spectrometry data.
+HybridEndoGenius is a **hybrid neuropeptide identification workflow** designed to improve the discovery of endogenous peptides from mass spectrometry (MS/MS) data. It integrates **database-driven** and **de novo–assisted** strategies to enable sensitive and flexible neuropeptide identification across different species and experimental settings.
+
+The workflow is designed to be **modular, reproducible, and scalable**, and is compatible with high-throughput computing environments such as **CHTC/HTCondor**, or running via Graphical User Interface (GUI).
+
+---
+
+## Key Features
+
+- Hybrid peptide identification strategy combining:
+  - Database search–based identification
+  - De novo sequencing–assisted discovery
+- Optimized for **neuropeptides**, which are typically:
+  - Short
+  - Low abundance
+  - Poorly annotated in standard protein databases
+- Flexible support for **species-specific configurations**
+- Graphical interface for easier workflow execution
+
+---
+
+## Getting started
+* [User manual](https://docs.google.com/document/d/1Y9O1ShWKm4modol7ijgWixstPiG2tdMIeqNZKT1JTKA/edit?tab=t.0#heading=h.auf0qsplq7j6)
 
 ### [Download](https://github.com/lingjunli-research/EndoGenius-v2.0/releases)
-
-#### Getting started
-* [User manual](https://docs.google.com/document/d/e/2PACX-1vRwKSjIl6wu88MTObZ7G0QYl9wzg7Rm065o4AxM1zzAMspEfHChLMcHMmWFWD8BjLIKSsvsqONeHknb/pub)
 
 #### Release notes
 ##### Version 1.1.4 (Released 8/20/24)
@@ -19,6 +37,7 @@ EndoGenius is a program produced by the Lingjun Li Lab at the University of Wisc
 * Integration of spectral library construction for DIA analysis
 * Integration of MotifQuest
 * Capability for either FDR or EndoGenius score cutoffs
+
 
 #### Key references
 EndoGenius:
