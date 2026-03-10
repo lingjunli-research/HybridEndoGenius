@@ -27,16 +27,19 @@ The workflow is designed to be **modular, reproducible, and scalable**, and is c
 ## Getting started
 * [User manual](https://docs.google.com/document/d/1Y9O1ShWKm4modol7ijgWixstPiG2tdMIeqNZKT1JTKA/edit?tab=t.0#heading=h.auf0qsplq7j6)
 
-### [Download](https://github.com/lingjunli-research/EndoGenius-v2.0/releases)
-
 #### Release notes
 ##### Version 1.1.4 (Released 8/20/24)
+[Download](https://github.com/lingjunli-research/EndoGenius-v2.0/releases)
 * Support for extended library of PTMs
 * Capability to search DiLeu-labeled peptides
 ##### Version 1.1.0 (Released 6/25/24)
+[Download](https://github.com/lingjunli-research/EndoGenius-v2.0/releases)
 * Integration of spectral library construction for DIA analysis
 * Integration of MotifQuest
 * Capability for either FDR or EndoGenius score cutoffs
+##### Version 2.0.0 (Released 3/9/26)
+[Download](https://github.com/lingjunli-research/HybridEndoGenius/releases)
+* Integration of de novo peptide sequencing
 
 
 #### Key references
